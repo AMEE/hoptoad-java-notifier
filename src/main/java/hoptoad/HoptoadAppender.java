@@ -18,6 +18,10 @@ public class HoptoadAppender extends AppenderSkeleton {
 
 	private Backtrace backtrace = new QuietRubyBacktrace();
 
+    private String endpoint = "airbrake.io/notifier_api/v2/notices";
+
+    private boolean secure = false;
+
 	public HoptoadAppender() {
 		setThreshold(Level.ERROR);
 	}
@@ -48,7 +52,7 @@ public class HoptoadAppender extends AppenderSkeleton {
 	}
 
 	private int notifyThrowableIn(final LoggingEvent loggingEvent) {
-		return hoptoadNotifier.notify(newNoticeFor(throwable(loggingEvent)));
+		return hoptoadNotifier.notify(newNoticeFor(throwable(loggingEvent)), endpoint, secure);
 	}
 
 	@Override
@@ -71,6 +75,14 @@ public class HoptoadAppender extends AppenderSkeleton {
 	public void setEnv(final String env) {
 		this.env = env;
 	}
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
 
 	private boolean thereIsThrowableIn(final LoggingEvent loggingEvent) {
 		return loggingEvent.getThrowableInformation() != null;

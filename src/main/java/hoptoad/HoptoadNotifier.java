@@ -16,8 +16,12 @@ public class HoptoadNotifier {
 		connection.setRequestMethod("POST");
 	}
 
-	private HttpURLConnection createConnection() throws IOException {
-		final HttpURLConnection connection = (HttpURLConnection) new URL("http://hoptoadapp.com/notifier_api/v2/notices").openConnection();
+	private HttpURLConnection createConnection(String endpoint, boolean secure) throws IOException {
+        String protocol = "http";
+        if (secure) {
+            protocol = "https";
+        }
+		final HttpURLConnection connection = (HttpURLConnection) new URL(protocol + "://" + endpoint).openConnection();
 		return connection;
 	}
 
@@ -26,9 +30,9 @@ public class HoptoadNotifier {
 		e.printStackTrace();
 	}
 
-	public int notify(final HoptoadNotice notice) {
+	public int notify(final HoptoadNotice notice, String endPoint, boolean secure) {
 		try {
-			final HttpURLConnection toHoptoad = createConnection();
+			final HttpURLConnection toHoptoad = createConnection(endPoint, secure);
 			addingProperties(toHoptoad);
 			String toPost = new NoticeApi2(notice).toString();
 			return send(toPost, toHoptoad);
