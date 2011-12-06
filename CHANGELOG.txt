@@ -1,0 +1,4 @@
+= Changelog
+
+== 1.9
+endpoint and secure configuration properties added.
