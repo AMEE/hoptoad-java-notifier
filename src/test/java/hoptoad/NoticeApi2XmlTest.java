@@ -4,10 +4,12 @@
 
 package hoptoad;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.junit.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
 
 public class NoticeApi2XmlTest {
 
@@ -21,7 +23,7 @@ public class NoticeApi2XmlTest {
 
 	@Before
 	public void setUp() {
-		notice = new HoptoadNoticeBuilder("apiKey", new RuntimeException("errorMessage")).newNotice();
+		notice = new HoptoadNoticeBuilder("apiKey", new ThrowableProxy(new RuntimeException("errorMessage"))).newNotice();
 	}
 
 	@Test

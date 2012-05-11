@@ -4,23 +4,30 @@
 
 package hoptoad;
 
-import static hoptoad.ApiKeys.*;
-import static hoptoad.Exceptions.*;
-import static java.util.Arrays.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import static hoptoad.ApiKeys.TEST_API_KEY;
+import static hoptoad.Exceptions.ERROR_MESSAGE;
+import static hoptoad.Exceptions.newException;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
-import java.util.*;
-
-import org.apache.commons.logging.*;
-import org.junit.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class HoptoadNoticeTest {
 	protected static final Backtrace BACKTRACE = new Backtrace(asList("backtrace is empty"));;
 	protected static final Map<String, Object> REQUEST = new HashMap<String, Object>();
 	protected static final Map<String, Object> ENVIRONMENT = new HashMap<String, Object>();
 
-	private final Log logger = LogFactory.getLog(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final Map<String, Object> EC2 = new HashMap<String, Object>();
 
@@ -58,7 +65,7 @@ public class HoptoadNoticeTest {
 	@Test
 	public void testNewHoptoadUsingBuilderNoticeFromException() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(TEST_API_KEY, EXCEPTION).newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(TEST_API_KEY, new ThrowableProxy(EXCEPTION)).newNotice();
 
 		assertThat(notice, is(notNullValue()));
 

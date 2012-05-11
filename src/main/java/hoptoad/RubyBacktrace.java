@@ -4,8 +4,10 @@
 
 package hoptoad;
 
-import java.text.*;
-import java.util.*;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+
+import java.text.MessageFormat;
+import java.util.List;
 
 public class RubyBacktrace extends Backtrace {
 
@@ -17,12 +19,12 @@ public class RubyBacktrace extends Backtrace {
 		super(backtrace);
 	}
 
-	public RubyBacktrace(final Throwable throwable) {
+	public RubyBacktrace(final IThrowableProxy throwable) {
 		super(throwable);
 	}
 
 	@Override
-	public Backtrace newBacktrace(final Throwable throwable) {
+	public Backtrace newBacktrace(final IThrowableProxy throwable) {
 		return new RubyBacktrace(throwable);
 	}
 

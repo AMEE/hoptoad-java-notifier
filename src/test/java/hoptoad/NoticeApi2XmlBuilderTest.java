@@ -1,10 +1,12 @@
 package hoptoad;
 
-import static hoptoad.ApiKeys.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.junit.*;
+import static hoptoad.ApiKeys.TEST_API_KEY;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
 
 public class NoticeApi2XmlBuilderTest {
 
@@ -22,7 +24,7 @@ public class NoticeApi2XmlBuilderTest {
 
 	@Test
 	public void testSendsRequest() throws Exception {
-		HoptoadNoticeBuilder builder = new HoptoadNoticeBuilder(TEST_API_KEY, newThrowable()) {
+		HoptoadNoticeBuilder builder = new HoptoadNoticeBuilder(TEST_API_KEY, new ThrowableProxy(newThrowable())) {
 			{
 				setRequest("http://example.com", "carburetor");
 			}
@@ -33,7 +35,7 @@ public class NoticeApi2XmlBuilderTest {
 
 	@Test
 	public void testSendsSessionKeyColorAndLights() throws Exception {
-		HoptoadNoticeBuilder builder = new HoptoadNoticeBuilder(TEST_API_KEY, newThrowable()) {
+		HoptoadNoticeBuilder builder = new HoptoadNoticeBuilder(TEST_API_KEY, new ThrowableProxy(newThrowable())) {
 			{
 				setRequest("http://example.com", "carburetor");
 				addSessionKey("lights", "<blink>");
@@ -51,6 +53,6 @@ public class NoticeApi2XmlBuilderTest {
 
 	@Before
 	public void setUp() {
-		productionNoticeBuilder = new HoptoadNoticeBuilder(TEST_API_KEY, newThrowable(), "<blink>production</blink>");
+		productionNoticeBuilder = new HoptoadNoticeBuilder(TEST_API_KEY, new ThrowableProxy(newThrowable()), "<blink>production</blink>");
 	}
 }

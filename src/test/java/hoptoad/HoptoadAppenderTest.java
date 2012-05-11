@@ -4,12 +4,14 @@
 
 package hoptoad;
 
-import static hoptoad.ApiKeys.*;
-import static hoptoad.Exceptions.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.junit.Test;
 
-import org.junit.*;
+import static hoptoad.ApiKeys.TEST_API_KEY;
+import static hoptoad.Exceptions.ERROR_MESSAGE;
+import static hoptoad.Exceptions.newException;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 public class HoptoadAppenderTest {
 
@@ -17,7 +19,7 @@ public class HoptoadAppenderTest {
 	public void testNewAppenderWithApiKey() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY);
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice, is(notNullValue()));
 	}
@@ -26,7 +28,7 @@ public class HoptoadAppenderTest {
 	public void testNewAppenderWithApiKeyAndBacktrace() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY, new Backtrace());
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice, is(notNullValue()));
 	}
@@ -35,7 +37,7 @@ public class HoptoadAppenderTest {
 	public void testNotyfyThrowable() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY);
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice.backtrace(), hasItem("at hoptoad.Exceptions.java:15:in `newException'"));
 		assertThat(notice.backtrace(), hasItem("Caused by java.lang.NullPointerException"));
@@ -46,7 +48,7 @@ public class HoptoadAppenderTest {
 	public void testNotyfyThrowable$UseBacktrace() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY, new Backtrace());
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice.backtrace(), hasItem("at hoptoad.Exceptions.newException(Exceptions.java:15)"));
 		assertThat(notice.backtrace(), hasItem("Caused by java.lang.NullPointerException"));
@@ -60,7 +62,7 @@ public class HoptoadAppenderTest {
 	public void testNotyfyThrowable$UseQuiteBacktrace() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY, new QuietRubyBacktrace());
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice.backtrace(), hasItem("at hoptoad.Exceptions.java:15:in `newException'"));
 		assertThat(notice.backtrace(), hasItem("Caused by java.lang.NullPointerException"));
@@ -71,7 +73,7 @@ public class HoptoadAppenderTest {
 	public void testNotyfyThrowable$UseRubyBacktrace() {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY, new RubyBacktrace());
 
-		final HoptoadNotice notice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice notice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 
 		assertThat(notice.backtrace(), hasItem("at hoptoad.Exceptions.java:15:in `newException'"));
 		assertThat(notice.backtrace(), hasItem("Caused by java.lang.NullPointerException"));
@@ -84,11 +86,11 @@ public class HoptoadAppenderTest {
 		final HoptoadAppender appender = new HoptoadAppender(TEST_API_KEY, switchBacktrace);
 
 		switchBacktrace.quiet();
-		final HoptoadNotice quietNotice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice quietNotice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 		assertThat(quietNotice.backtrace(), not(hasItem("at sun.reflect.NativeMethodAccessorImpl.invoke0(NativeMethodAccessorImpl.java-2)")));
 
 		switchBacktrace.verbose();
-		final HoptoadNotice verboseNotice = appender.newNoticeFor(newException(ERROR_MESSAGE));
+		final HoptoadNotice verboseNotice = appender.newNoticeFor(new ThrowableProxy(newException(ERROR_MESSAGE)));
 		assertThat(verboseNotice.backtrace(), hasItem("at sun.reflect.NativeMethodAccessorImpl.invoke0(NativeMethodAccessorImpl.java-2)"));
 	}
 }

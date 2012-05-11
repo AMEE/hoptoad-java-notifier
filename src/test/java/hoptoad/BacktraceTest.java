@@ -4,17 +4,20 @@
 
 package hoptoad;
 
-import static hoptoad.Exceptions.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.regex.PatternSyntaxException;
+
+import static hoptoad.Exceptions.ERROR_MESSAGE;
+import static hoptoad.Exceptions.newException;
 import static hoptoad.Slurp.*;
-import static hoptoad.ValidBacktraces.*;
-import static org.hamcrest.Matchers.*;
+import static hoptoad.ValidBacktraces.isValidBacktrace;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
-
-import java.util.*;
-import java.util.regex.*;
-
-import org.apache.commons.lang.exception.*;
-import org.junit.*;
 
 public class BacktraceTest {
 
@@ -30,7 +33,7 @@ public class BacktraceTest {
 	public void testExceptionToRubyBacktrace() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new RubyBacktrace(EXCEPTION);
+		final Iterable<String> backtrace = new RubyBacktrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, hasItem("at hoptoad.Exceptions.java:15:in `newException'"));
 	}
@@ -38,7 +41,7 @@ public class BacktraceTest {
 	@Test
 	public void testEscapesExceptionClassName() {
 		try {
-			new Backtrace(new Exception("com.banana.MyClass{junk}"));
+			new Backtrace(new ThrowableProxy(new Exception("com.banana.MyClass{junk}")));
 		} catch (PatternSyntaxException e) {
 			fail("Throwing a pattern syntax exception means the class name might not have been escaped properly");
 		}
@@ -48,7 +51,7 @@ public class BacktraceTest {
 	public void testExceptionToRubyBacktrace$UsingNewRubyBacktraceEmptyInstanceAsFactoryOfRubyBacktrace() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new RubyBacktrace().newBacktrace(EXCEPTION);
+		final Iterable<String> backtrace = new RubyBacktrace().newBacktrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, hasItem("at hoptoad.Exceptions.java:15:in `newException'"));
 	}
@@ -57,7 +60,7 @@ public class BacktraceTest {
 	public void testFilteredIgnoringMessage() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new QuietRubyBacktrace(EXCEPTION);
+		final Iterable<String> backtrace = new QuietRubyBacktrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, not(hasItem("java.lang.RuntimeException: undefined method `password' for nil:NilClass")));
 		assertThat(backtrace, not(hasItem("java.lang.RuntimeException undefined method `password' for nilNilClass")));
@@ -67,7 +70,7 @@ public class BacktraceTest {
 	public void testFilteredIgnoringMessage$UsingNewQuiteBacktraceEmptyInstanceAsFactoryOfQuietRubyBacktrace() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new QuietRubyBacktrace().newBacktrace(EXCEPTION);
+		final Iterable<String> backtrace = new QuietRubyBacktrace().newBacktrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, not(hasItem("java.lang.RuntimeException: undefined method `password' for nil:NilClass")));
 		assertThat(backtrace, not(hasItem("java.lang.RuntimeException undefined method `password' for nilNilClass")));
@@ -284,7 +287,7 @@ public class BacktraceTest {
 	public void testJavaBacktrace() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new Backtrace(EXCEPTION);
+		final Iterable<String> backtrace = new Backtrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, hasItem("at hoptoad.Exceptions.newException(Exceptions.java:15)"));
 	}
@@ -293,7 +296,7 @@ public class BacktraceTest {
 	public void testJavaBacktrace$UsingNewBacktraceEmptyInstanceAsFactoryOfBacktrace() {
 		final Throwable EXCEPTION = newException(ERROR_MESSAGE);
 
-		final Iterable<String> backtrace = new Backtrace().newBacktrace(EXCEPTION);
+		final Iterable<String> backtrace = new Backtrace().newBacktrace(new ThrowableProxy(EXCEPTION));
 
 		assertThat(backtrace, hasItem("at hoptoad.Exceptions.newException(Exceptions.java:15)"));
 	}

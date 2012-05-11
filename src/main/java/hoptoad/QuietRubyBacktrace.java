@@ -4,7 +4,9 @@
 
 package hoptoad;
 
-import java.util.*;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+
+import java.util.List;
 
 public class QuietRubyBacktrace extends RubyBacktrace {
 
@@ -16,7 +18,7 @@ public class QuietRubyBacktrace extends RubyBacktrace {
 		super(backtrace);
 	}
 
-	public QuietRubyBacktrace(final Throwable throwable) {
+	public QuietRubyBacktrace(final IThrowableProxy throwable) {
 		super(throwable);
 	}
 
@@ -32,7 +34,7 @@ public class QuietRubyBacktrace extends RubyBacktrace {
 	}
 
 	@Override
-	public Backtrace newBacktrace(final Throwable throwable) {
+	public Backtrace newBacktrace(final IThrowableProxy throwable) {
 		return new QuietRubyBacktrace(throwable);
 	}
 

@@ -4,17 +4,25 @@
 
 package hoptoad;
 
-import static hoptoad.Exceptions.*;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static hoptoad.Exceptions.ERROR_MESSAGE;
+import static hoptoad.Exceptions.newException;
 import static hoptoad.Slurp.*;
-import static java.util.Arrays.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
-import java.util.*;
-
-import org.apache.commons.logging.*;
-import org.hamcrest.*;
-import org.junit.*;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 public class HoptoadNotifierTest {
 
@@ -27,11 +35,11 @@ public class HoptoadNotifierTest {
 	protected static final Map<String, Object> SESSION = new HashMap<String, Object>();
 	protected static final Map<String, Object> ENVIRONMENT = new HashMap<String, Object>();
 
-	private final Log logger = LogFactory.getLog(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final Map<String, Object> EC2 = new HashMap<String, Object>();
 
-	private HoptoadNotifierV2 notifierV2;
+	private HoptoadNotifier notifier;
 
 	private <T> Matcher<T> internalServerError() {
 		return new BaseMatcher<T>() {
@@ -60,7 +68,7 @@ public class HoptoadNotifierTest {
 		EC2.put("EC2_PRIVATE_KEY", "EC2_PRIVATE_KEY");
 		EC2.put("AWS_ACCESS", "AWS_ACCESS");
 		EC2.put("EC2_CERT", "EC2_CERT");
-		notifierV2 = new HoptoadNotifierV2();
+		notifier = new HoptoadNotifier();
 	}
 
 	@Test
@@ -97,68 +105,69 @@ public class HoptoadNotifierTest {
 	@Test
 	public void testNotifyToHoptoadUsingBuilderNoticeFromExceptionInEnv() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, EXCEPTION, "test").newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new ThrowableProxy(EXCEPTION), "test").newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testNotifyToHoptoadUsingBuilderNoticeFromExceptionInEnvAndSystemProperties() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, EXCEPTION, "test") {
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new ThrowableProxy(EXCEPTION), "test") {
 			{
 				filteredSystemProperties();
 			}
 
 		}.newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testNotifyToHoptoadUsingBuilderNoticeInEnv() {
 		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, ERROR_MESSAGE, "test").newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testSendExceptionNoticeWithFilteredBacktrace() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new QuietRubyBacktrace(), EXCEPTION, "test").newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new QuietRubyBacktrace(), new ThrowableProxy(EXCEPTION), "test").newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testSendExceptionToHoptoad() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, EXCEPTION).newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new ThrowableProxy(EXCEPTION)).newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testSendExceptionToHoptoadUsingRubyBacktrace() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new RubyBacktrace(), EXCEPTION, "test").newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, new RubyBacktrace(), new ThrowableProxy(EXCEPTION), "test").newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testSendExceptionToHoptoadUsingRubyBacktraceAndFilteredSystemProperties() {
 		final Exception EXCEPTION = newException(ERROR_MESSAGE);
-		final HoptoadNotice notice = new HoptoadNoticeBuilderUsingFilterdSystemProperties(API_KEY, new RubyBacktrace(), EXCEPTION, "test").newNotice();
+		final HoptoadNotice notice = new HoptoadNoticeBuilderUsingFilterdSystemProperties(
+            API_KEY, new RubyBacktrace(), new ThrowableProxy(EXCEPTION), "test").newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
 	public void testSendNoticeToHoptoad() {
 		final HoptoadNotice notice = new HoptoadNoticeBuilder(API_KEY, ERROR_MESSAGE).newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
@@ -169,7 +178,7 @@ public class HoptoadNotifierTest {
 			}
 		}.newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 
 	@Test
@@ -180,6 +189,6 @@ public class HoptoadNotifierTest {
 			}
 		}.newNotice();
 
-		assertThat(notifierV2.notify(notice, END_POINT, SECURE), is(200));
+		assertThat(notifier.notify(notice, END_POINT, SECURE), is(200));
 	}
 }

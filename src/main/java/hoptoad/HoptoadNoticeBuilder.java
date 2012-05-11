@@ -4,10 +4,12 @@
 
 package hoptoad;
 
-import static java.util.Arrays.*;
+import ch.qos.logback.classic.spi.IThrowableProxy;
 
 import java.util.*;
 import java.util.Map.Entry;
+
+import static java.util.Arrays.asList;
 
 public class HoptoadNoticeBuilder {
 
@@ -39,7 +41,7 @@ public class HoptoadNoticeBuilder {
 
 	private String component;
 
-	public HoptoadNoticeBuilder(final String apiKey, final Backtrace backtraceBuilder, final Throwable throwable, final String env) {
+	public HoptoadNoticeBuilder(final String apiKey, final Backtrace backtraceBuilder, final IThrowableProxy throwable, final String env) {
 		this(apiKey, throwable.getMessage(), env);
 		this.backtraceBuilder = backtraceBuilder;
 		errorClass(throwable);
@@ -56,15 +58,15 @@ public class HoptoadNoticeBuilder {
 		env(env);
 	}
 
-	public HoptoadNoticeBuilder(final String apiKey, final Throwable throwable) {
+	public HoptoadNoticeBuilder(final String apiKey, final IThrowableProxy throwable) {
 		this(apiKey, new Backtrace(), throwable, "test");
 	}
 
-	public HoptoadNoticeBuilder(final String apiKey, final Throwable throwable, final String env) {
+	public HoptoadNoticeBuilder(final String apiKey, final IThrowableProxy throwable, final String env) {
 		this(apiKey, new Backtrace(), throwable, env);
 	}
 
-	public HoptoadNoticeBuilder(final String apiKey, final Throwable throwable, final String projectRoot, final String env) {
+	public HoptoadNoticeBuilder(final String apiKey, final IThrowableProxy throwable, final String projectRoot, final String env) {
 		this(apiKey, new Backtrace(), throwable, env);
 		projectRoot(projectRoot);
 	}
@@ -91,7 +93,7 @@ public class HoptoadNoticeBuilder {
 		this.backtrace = backtrace;
 	}
 
-	private void backtrace(final Throwable throwable) {
+	private void backtrace(final IThrowableProxy throwable) {
 		backtrace(backtraceBuilder.newBacktrace(throwable));
 	}
 
@@ -129,10 +131,10 @@ public class HoptoadNoticeBuilder {
 		throw new RuntimeException(message);
 	}
 
-	private void errorClass(Throwable throwable) {
-		this.errorClass = throwable.getClass().getName();
+	private void errorClass(IThrowableProxy throwable) {
+		this.errorClass = throwable.getClassName();
 		if (errorMessage == null || errorMessage.trim().isEmpty()) {
-			errorMessage = '[' + throwable.getClass().toString() + ']';
+			errorMessage = '[' + errorClass + ']';
 		}
 	}
 
